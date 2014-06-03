@@ -1,0 +1,18 @@
+description = 'Ostrich Netty Implements'
+group = 'org.ostrich'
+
+buildscript {
+}
+
+dependencies {
+	compile project(':Ostrichapi')
+}
+
+
+jar {
+	manifest{
+		attributes( 'DynamicImport-Package':'*')
+		attributes( 'Include-Resource':'.')
+		attributes( 'Import-Lib':'lib')
+	}
+}
