@@ -23,10 +23,9 @@ subprojects {
 
 	artifacts { archives sourcesJar }
 
-
 	dependencies {
-		includeInJar   'org.projectlombok:lombok:1.12.2'
-		testCompile 	'junit:junit:4.10'
+		testCompile 'junit:junit:4.10'
+		compile 'org.projectlombok:lombok:1.12.2'
 		compile "org.codehaus.jackson:jackson-mapper-asl:1.9.5"
 		compile "org.codehaus.jackson:jackson-core-lgpl:1.9.5"
 		compile "org.apache.commons:commons-lang3:3.1"
