@@ -14,7 +14,6 @@ import org.glassfish.grizzly.filterchain.NextAction;
 import org.glassfish.grizzly.nio.NIOConnection;
 import org.glassfish.grizzly.threadpool.GrizzlyExecutorService;
 import org.ostrich.nio.api.framework.protocol.KeepAlivePacket;
-import org.ostrich.nio.api.framework.tool.SecondCounter;
 import org.ostrich.nio.grizzly.basic.ConnectionManager;
 import org.ostrich.nio.grizzly.basic.IdleWorkerFactory;
 
@@ -64,8 +63,7 @@ public abstract class CMKeepAliveFilter extends BaseFilter implements Runnable {
 	@Override
 	public NextAction handleConnect(FilterChainContext ctx) throws IOException {
 		if (isTracking && ctx.getConnection() != null) {
-			attrLastActive
-					.set(ctx.getConnection(), SecondCounter.currentTime());
+			attrLastActive.set(ctx.getConnection(), System.currentTimeMillis());
 		}
 		return super.handleClose(ctx);
 	}
@@ -106,8 +104,7 @@ public abstract class CMKeepAliveFilter extends BaseFilter implements Runnable {
 
 		@Override
 		public void onComplete(final FilterChainContext ctx) {
-			attrLastActive
-					.set(ctx.getConnection(), SecondCounter.currentTime());
+			attrLastActive.set(ctx.getConnection(), System.currentTimeMillis());
 		}
 	} // END ContextCompletionListener
 
@@ -171,8 +168,7 @@ public abstract class CMKeepAliveFilter extends BaseFilter implements Runnable {
 			try {
 				conn = connMan.getConnection(1);
 				if (attrLastActive.isSet(conn)) {// 该链接是被管理器管理的
-					long timeMillis = SecondCounter.currentTime()
-							- attrLastActive.get(conn);
+					long timeMillis = System.currentTimeMillis() - attrLastActive.get(conn);
 					if (timeMillis > idleTimeMillis || isFirst) {
 						executor.execute(idleFactory.newTask(0, conn));
 						//conn.write(KeepAlivePacket.REQ);

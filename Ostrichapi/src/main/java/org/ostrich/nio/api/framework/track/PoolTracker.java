@@ -8,8 +8,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.ostrich.nio.api.framework.tool.SecondCounter;
-
 @Slf4j
 public class PoolTracker<T> implements Runnable, IPoolTracker<T> {
 
@@ -68,14 +66,14 @@ public class PoolTracker<T> implements Runnable, IPoolTracker<T> {
 	public void trackIn(T t) {
 		if (t != null) {
 			stacks.put(t, new TrackElement(Thread.currentThread()
-					.getStackTrace(), SecondCounter.currentTime()));
+					.getStackTrace(), System.currentTimeMillis()));
 		}
 	}
 
 	@Override
 	public void trackIn(Collection<T> c) {
 		TrackElement te = new TrackElement(Thread.currentThread()
-				.getStackTrace(), SecondCounter.currentTime());
+				.getStackTrace(), System.currentTimeMillis());
 		for (T t : c) {
 			stacks.put(t, te);
 		}
@@ -85,7 +83,7 @@ public class PoolTracker<T> implements Runnable, IPoolTracker<T> {
 	public void trackOut(T t) {
 		TrackElement te = stacks.get(t);
 		if (te != null) {
-			long curcost = SecondCounter.currentTime() - te.timeMillis;
+			long curcost = System.currentTimeMillis() - te.timeMillis;
 			maxCost = Math.max(maxCost, curcost);
 			toalCost.addAndGet(curcost);
 			calctimes.incrementAndGet();

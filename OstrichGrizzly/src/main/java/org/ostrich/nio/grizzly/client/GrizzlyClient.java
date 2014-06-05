@@ -24,7 +24,6 @@ import org.ostrich.nio.api.framework.exception.TimeoutException;
 import org.ostrich.nio.api.framework.protocol.AuthEntity;
 import org.ostrich.nio.api.framework.protocol.JID;
 import org.ostrich.nio.api.framework.protocol.JsonPacket;
-import org.ostrich.nio.api.framework.tool.SecondCounter;
 import org.ostrich.nio.grizzly.basic.ConnectionManager;
 import org.ostrich.nio.grizzly.filterchain.BlockingConnectionFilter;
 import org.ostrich.nio.grizzly.filterchain.EntityHeartBeatFilter;
@@ -66,8 +65,7 @@ public class GrizzlyClient {
 		FilterChainBuilder fcBuilder = FilterChainBuilder.stateless();
 		fcBuilder.add(new TransportFilter());
 		fcBuilder.add(new JSONTransferFilter());
-		fcBuilder
-				.add(new EntityLoginFilter(connMan,
+		fcBuilder.add(new EntityLoginFilter(connMan,
 						LoginFilter.ClosedAction.RECONNECT, jid, serverJID,
 						loginToken));
 		EntityHeartBeatFilter entityHeartBeatFilter = EntityHeartBeatFilter
@@ -112,7 +110,7 @@ public class GrizzlyClient {
 	/*** 同步 ***/
 	public JsonPacket syncSend(JsonPacket packet)
 			throws RouterException, RemoteCallException {
-		long startTime = SecondCounter.currentTime();
+		long startTime = System.currentTimeMillis();
 		NIOConnection connection = connMan.getConnection();
 		try {
 			if (connection != null) {
@@ -146,7 +144,7 @@ public class GrizzlyClient {
 	/*** 异步 ***/
 	public JsonPacket asynSend(JsonPacket packet)
 			throws RouterException, RemoteCallException {
-		long startTime = SecondCounter.currentTime();
+		long startTime = System.currentTimeMillis();
 		NIOConnection connection = connMan.getConnection();
 		try {
 			if (connection != null) {
@@ -188,7 +186,7 @@ public class GrizzlyClient {
 
 	public void postPacket(JsonPacket packet) throws RouterException,
 			RemoteCallException {
-		long startTime = SecondCounter.currentTime();
+		long startTime = System.currentTimeMillis();
 		NIOConnection connection = connMan.getConnection();
 		try {
 			if (connection != null) {

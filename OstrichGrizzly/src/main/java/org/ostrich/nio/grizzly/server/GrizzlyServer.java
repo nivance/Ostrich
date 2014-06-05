@@ -25,7 +25,6 @@ import org.glassfish.grizzly.threadpool.GrizzlyExecutorService;
 import org.ostrich.nio.api.framework.exception.RouterException;
 import org.ostrich.nio.api.framework.protocol.AuthEntity;
 import org.ostrich.nio.api.framework.protocol.JID;
-import org.ostrich.nio.api.framework.tool.SecondCounter;
 import org.ostrich.nio.grizzly.filterchain.BlockingConnectionFilter;
 import org.ostrich.nio.grizzly.filterchain.CMKeepAliveFilter;
 import org.ostrich.nio.grizzly.filterchain.EntityHeartBeatFilter;
@@ -145,7 +144,7 @@ public class GrizzlyServer {
 								NIOConnection conn = idleIter.next();
 								Attribute<Long> activeAttr = keepAliveFilter.attrLastActive;
 								if (activeAttr.isSet(conn)) {// 该链接是被管理器管理的
-									long timeMillis = SecondCounter.currentTime() - activeAttr.get(conn);
+									long timeMillis = System.currentTimeMillis() - activeAttr.get(conn);
 									if (timeMillis > heartbeattime) {
 										log.debug("close connection.jid[" + jid.toString() + "] hasn't heartbeat for "
 												+ timeMillis + "ms, the default heartbeattime is " + heartbeattime + "ms,");
