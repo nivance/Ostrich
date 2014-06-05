@@ -5,6 +5,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.glassfish.grizzly.CompletionHandler;
 import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.Grizzly;
@@ -21,6 +23,7 @@ import org.ostrich.nio.api.framework.protocol.JsonPacket;
 import org.ostrich.nio.api.framework.protocol.PacketType;
 import org.ostrich.nio.api.framework.tool.JsonUtil;
 
+@Slf4j
 public class BlockingConnectionFilter extends BaseFilter {
 	protected final Attribute<FutureImpl<JsonPacket>> attrSendBuffer = Grizzly.DEFAULT_ATTRIBUTE_BUILDER
 			.createAttribute(BlockingConnectionFilter.class.getName() + '-'
@@ -44,17 +47,12 @@ public class BlockingConnectionFilter extends BaseFilter {
 				try {
 					completeFuture.result(packet);
 				} catch (Exception e) {
-					e.printStackTrace();
+					log.error("", e);
 				}
 				return ctx.getStopAction();
 			}
 		}
 		return ctx.getInvokeAction();
-	}
-
-	@Override
-	public NextAction handleWrite(FilterChainContext ctx) throws IOException {
-		return super.handleWrite(ctx);
 	}
 
 	public JsonPacket write(Connection<?> connection, JsonPacket packet)
@@ -65,7 +63,6 @@ public class BlockingConnectionFilter extends BaseFilter {
 			try {
 				completeFuture.get(maxDealTime, TimeUnit.MILLISECONDS);
 			} catch (Exception e) {
-				e.printStackTrace();
 				throw new IOException("connection is busy", e);
 			}
 		}
@@ -78,23 +75,12 @@ public class BlockingConnectionFilter extends BaseFilter {
 					&& result.getPacketType() == PacketType.result_exception) {
 				ExceptionEntiy ee = (ExceptionEntiy) JsonUtil.json2Bean(
 						result.getEntity(), ExceptionEntiy.class);
-
 				throw new RemoteCallException(ee);
 			} else if (result == null) {
 				throw new RouterException("result is null");
 			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			throw new RouterException("remote call InterruptedException @"
-					+ e.toString());
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-			throw new RouterException("remote call ExecutionException@"
-					+ e.toString());
-		} catch (TimeoutException e) {
-			e.printStackTrace();
-			throw new RouterException("remote call TimeoutException@"
-					+ e.toString());
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			throw new RouterException("remote call TimeoutException@", e);
 		} finally {
 			attrSendBuffer.remove(connection);
 		}
