@@ -14,8 +14,6 @@ import org.glassfish.grizzly.filterchain.BaseFilter;
 import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.filterchain.NextAction;
 import org.glassfish.grizzly.threadpool.GrizzlyExecutorService;
-import org.ostrich.nio.api.framework.exception.RemoteCallException;
-import org.ostrich.nio.api.framework.exception.RouterException;
 import org.ostrich.nio.api.framework.protocol.ExceptionEntiy;
 import org.ostrich.nio.api.framework.protocol.JsonPacket;
 import org.ostrich.nio.api.framework.protocol.PacketType;
@@ -92,14 +90,6 @@ public class SnifferFilter extends BaseFilter {
 				JsonPacket sendpack = JsonPacket.newPublish(session.getJid(),
 						subentity.getSubkey(), packet);
 				session.postPacket(sendpack);
-			} catch (RouterException e) {
-				log.error(
-						"post subscribe packet error:RouterException"
-								+ e.getMessage() + ":" + packet, e);
-			} catch (RemoteCallException e) {
-				log.error(
-						"post subscribe packet error:RemoteCallException"
-								+ e.getMessage() + ":" + packet, e);
 			} catch (Throwable e) {
 				log.error("post subscribe packet error:" + e.getMessage() + ":"
 						+ packet, e);
@@ -122,7 +112,6 @@ public class SnifferFilter extends BaseFilter {
 						.equals(packet.getPacketType()))
 				&& (subber.getAction() == null || subber.getAction().equals(
 						packet.getAction()));
-
 	}
 
 	public void sniffer(JsonPacket packet) {
@@ -183,12 +172,10 @@ public class SnifferFilter extends BaseFilter {
 					currentsniff.ref.incrementAndGet();
 					ctx.write(packet.asSubResult(SubscribeEntity.duplex));
 				}
-
 			} else if (packet.getAction().equals(SUB_CANCEL)) {
 				SubscribeEntity entity = JsonUtil.json2Bean(packet.getEntity(),
 						SubscribeEntity.class);
 				Sniffer sniff = new Sniffer(entity, from);
-
 				Sniffer currentsniff = subs.remove(sniff);
 				if (currentsniff != null) {
 					log.info("取消订阅成功:" + packet.getEntity());
@@ -198,7 +185,6 @@ public class SnifferFilter extends BaseFilter {
 					subs.remove(currentsniff);
 				} else {
 					log.error("取消订阅失败，没找到相关订阅:" + packet.getEntity());
-
 					ctx.write(packet.asSubResult(SubscribeEntity.fail));
 				}
 			} else {

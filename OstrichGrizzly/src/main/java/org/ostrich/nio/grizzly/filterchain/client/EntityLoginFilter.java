@@ -62,7 +62,6 @@ public class EntityLoginFilter extends LoginFilter {
 			}
 			return ctx.getStopAction();
 		}
-
 		else if (packet.getPacketType() == PacketType.heartbeart_ans) {
 			return ctx.getInvokeAction();
 		}

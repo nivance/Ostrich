@@ -45,7 +45,9 @@ public abstract class LoginFilter extends BaseFilter {
 			throws IOException;
 
 	public void onClosed(FilterChainContext ctx) throws IOException {
-		log.debug("连接被断开:" + connMan.getJID()+"@remote="+ctx.getConnection().getPeerAddress()+",local="+ctx.getConnection().getLocalAddress());
+		log.debug("连接被断开:" + connMan.getJID() + "@remote="
+				+ ctx.getConnection().getPeerAddress() + ",local="
+				+ ctx.getConnection().getLocalAddress());
 		NIOConnection conn = (NIOConnection) ctx.getConnection();
 		if (conn != null) {
 			connMan.removeConnection(conn);
@@ -58,23 +60,23 @@ public abstract class LoginFilter extends BaseFilter {
 			}
 			connMan.createConnection(1);
 		}
-		
-		
+
 	}
 
-	protected void setLoginSuccessed(FilterChainContext ctx,String token) {
-		log.debug("连接成功:" + connMan.getJID()+"@remote="+ctx.getConnection().getPeerAddress()+",local="+ctx.getConnection().getLocalAddress());
+	protected void setLoginSuccessed(FilterChainContext ctx, String token) {
+		log.debug("连接成功:" + connMan.getJID() + "@remote="
+				+ ctx.getConnection().getPeerAddress() + ",local="
+				+ ctx.getConnection().getLocalAddress());
 
 		attrLoginToken.set(ctx.getConnection(), token);
 		connMan.putReadyConnection((NIOConnection) ctx.getConnection());
 	}
 
 	protected boolean isLogined(FilterChainContext ctx) {
-		if(!attrLoginToken.isSet(ctx.getConnection()))
-		{
+		if (!attrLoginToken.isSet(ctx.getConnection())) {
 			return false;
 		}
-		return attrLoginToken.get(ctx.getConnection()) !=null;
+		return attrLoginToken.get(ctx.getConnection()) != null;
 	}
 
 	@Override

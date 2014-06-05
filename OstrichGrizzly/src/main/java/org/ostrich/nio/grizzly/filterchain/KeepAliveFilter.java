@@ -18,35 +18,34 @@ import org.ostrich.nio.grizzly.basic.ConnectionManager;
 import org.ostrich.nio.grizzly.basic.IdleWorkerFactory;
 
 @Slf4j
-public abstract class CMKeepAliveFilter extends BaseFilter implements Runnable {
+public abstract class KeepAliveFilter extends BaseFilter implements Runnable {
 
 	public enum KeepAliveType {
 		Not_A_KeepAlive, ClientRequest, ServerResponse,
 	}
 
 	protected ConnectionManager connMan;
-	public static long idleTimeMillis = 60 * 1000;// 默认是1分钟
+	protected long idleTimeMillis = 60 * 1000;// 默认是1分钟
 	protected boolean isTracking;
 	protected IdleWorkerFactory idleFactory;
 	public final Attribute<Long> attrLastActive = Grizzly.DEFAULT_ATTRIBUTE_BUILDER
-			.createAttribute(CMKeepAliveFilter.class.getName() + '-'
+			.createAttribute(KeepAliveFilter.class.getName() + '-'
 					+ System.identityHashCode(this) + ".lastactive");
+
 	private final FilterChainContext.CompletionListener contextCompletionListener = new ContextCompletionListener();
 
 	protected ExecutorService executor;
 
-	public CMKeepAliveFilter(ConnectionManager connMan, long idleTimeMillis,
+	public KeepAliveFilter(ConnectionManager connMan,
 			IdleWorkerFactory idleFactory, boolean isTracking) {
-
-		this(connMan, idleTimeMillis, idleFactory, GrizzlyExecutorService
-				.createInstance(), isTracking);
+		this(connMan, idleFactory, GrizzlyExecutorService.createInstance(),
+				isTracking);
 	}
 
-	public CMKeepAliveFilter(ConnectionManager connMan, long idleTimeMillis,
+	public KeepAliveFilter(ConnectionManager connMan,
 			IdleWorkerFactory idleFactory, ExecutorService executor,
 			boolean isTracking) {
 		this.connMan = connMan;
-		this.idleTimeMillis = idleTimeMillis;
 		this.idleFactory = idleFactory;
 		this.executor = executor;
 		this.isTracking = isTracking;
@@ -54,7 +53,7 @@ public abstract class CMKeepAliveFilter extends BaseFilter implements Runnable {
 			startTrackAlive();
 		}
 	}
-	
+
 	public void startTrackAlive() {
 		isTracking = true;
 		executor.execute(this);
@@ -101,12 +100,11 @@ public abstract class CMKeepAliveFilter extends BaseFilter implements Runnable {
 
 	private final class ContextCompletionListener implements
 			FilterChainContext.CompletionListener {
-
 		@Override
 		public void onComplete(final FilterChainContext ctx) {
 			attrLastActive.set(ctx.getConnection(), System.currentTimeMillis());
 		}
-	} // END ContextCompletionListener
+	} 
 
 	@Override
 	public void onRemoved(FilterChain filterChain) {
@@ -122,7 +120,6 @@ public abstract class CMKeepAliveFilter extends BaseFilter implements Runnable {
 	 * @param ctx
 	 */
 	public void onClientRequest(FilterChainContext ctx) throws IOException {
-		//log.debug("receive heart beat.");
 		ctx.write(KeepAlivePacket.ANS);
 	}
 
@@ -168,12 +165,14 @@ public abstract class CMKeepAliveFilter extends BaseFilter implements Runnable {
 			try {
 				conn = connMan.getConnection(1);
 				if (attrLastActive.isSet(conn)) {// 该链接是被管理器管理的
-					long timeMillis = System.currentTimeMillis() - attrLastActive.get(conn);
+					long timeMillis = System.currentTimeMillis()
+							- attrLastActive.get(conn);
 					if (timeMillis > idleTimeMillis || isFirst) {
 						executor.execute(idleFactory.newTask(0, conn));
-						//conn.write(KeepAlivePacket.REQ);
-						log.debug("size:" + connMan.getSize() + ",idlesize:" + connMan.getIdleSize() + ",conn: " + i
-								+ ",idletime: " + timeMillis + ", heartbeattime:" + idleTimeMillis + "发送心跳");
+						log.debug("size:" + connMan.getSize() + ",idlesize:"
+								+ connMan.getIdleSize() + ",conn: " + i
+								+ ",idletime: " + timeMillis
+								+ ", heartbeattime:" + idleTimeMillis + "发送心跳");
 						conn = null;
 					}
 				}

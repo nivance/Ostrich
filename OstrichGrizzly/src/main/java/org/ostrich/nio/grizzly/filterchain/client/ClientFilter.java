@@ -53,8 +53,8 @@ public class ClientFilter extends BaseFilter {
 			response.prepare();
 			if (packet.getPacketType() == PacketType.publish
 					|| packet.getPacketType() == PacketType.post) {
-				response.setPacketSetted(true);
-				response.setPacketWrited(true);// cannot return
+				//response.setPacketSetted(true);
+				response.setPacketWrited(true);
 			} else if (packet.getPacketType() == PacketType.post_response) {
 				response.setPacketSetted(true);
 				response.setPacketWrited(true);// cannot return
