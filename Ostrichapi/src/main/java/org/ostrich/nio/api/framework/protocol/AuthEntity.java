@@ -32,6 +32,25 @@ public class AuthEntity implements Serializable {
 	}
 
 	@Override
+	public boolean equals(Object o) {
+		if (o instanceof AuthEntity) {
+			AuthEntity ao = (AuthEntity) o;
+			if (ao.key == null) {
+				if (key == null) {
+					return true;
+				}
+			} else {
+				return ao.key.equals(key);
+			}
+		}
+		return false;
+	}
+	
+	public int hashCode(){
+		return super.hashCode();
+	}
+
+	@Override
 	public String toString() {
 		return "AuthEntity[" + key + "," + token + "," + priority + "]@"
 				+ this.hashCode();
