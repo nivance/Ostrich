@@ -40,6 +40,7 @@ public class JsonPacket implements Serializable {
 		this.packetType = packetType;
 		this.action = action;
 		this.entity = bean;
+		this.id = IDGenerator.nextID();
 	}
 
 	public static JsonPacket newRequest(JID from, JID to, String action,
@@ -62,7 +63,6 @@ public class JsonPacket implements Serializable {
 	public static JsonPacket newPost(JID to, String action, Object bean) {
 		JsonPacket packet = new JsonPacket(null, to,
 				PacketType.post, action, JsonUtil.bean2Json(bean));
-		packet.setId(IDGenerator.nextID());
 		return packet;
 	}
 
