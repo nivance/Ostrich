@@ -5,6 +5,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.attributes.Attribute;
@@ -21,14 +23,13 @@ import org.ostrich.nio.api.framework.protocol.SubscribeEntity;
 import org.ostrich.nio.api.framework.tool.JsonUtil;
 import org.ostrich.nio.grizzly.server.GrizzlyClientSession;
 import org.ostrich.nio.grizzly.server.GrizzlyServer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class SnifferFilter extends BaseFilter {
 
 	public final static String SUB_DO = "sub";
 	public final static String SUB_CANCEL = "cancel";
-	private Logger log = LoggerFactory.getLogger(SnifferFilter.class);
+	
 	private GrizzlyServer server;
 
 	protected final Attribute<Sniffer> attrSubscription = Grizzly.DEFAULT_ATTRIBUTE_BUILDER
@@ -95,22 +96,18 @@ public class SnifferFilter extends BaseFilter {
 				log.error(
 						"post subscribe packet error:RouterException"
 								+ e.getMessage() + ":" + packet, e);
-				e.printStackTrace();
 			} catch (RemoteCallException e) {
 				log.error(
 						"post subscribe packet error:RemoteCallException"
 								+ e.getMessage() + ":" + packet, e);
-				e.printStackTrace();
 			} catch (Throwable e) {
 				log.error("post subscribe packet error:" + e.getMessage() + ":"
 						+ packet, e);
-				e.printStackTrace();
 			}
 		}
 	}
 
 	private boolean bareOrFullEquals(String jid1, String jid2) {
-
 		if (jid1.startsWith(jid2) || jid2.startsWith(jid1))
 			return true;
 		return StringUtils.equals(jid1, jid2);
@@ -163,7 +160,6 @@ public class SnifferFilter extends BaseFilter {
 	@Override
 	public NextAction handleRead(final FilterChainContext ctx)
 			throws IOException {
-
 		JsonPacket packet = ctx.getMessage();
 		if (packet.getEntity() == null || packet.getPacketType() == null) {
 			log.error("packet error:@" + packet);
@@ -171,8 +167,7 @@ public class SnifferFilter extends BaseFilter {
 		}
 		GrizzlyClientSession from = server.getSession(ctx.getConnection());
 		packet.setFrom(from.getJid());
-		if (packet.getPacketType() == PacketType.subscribe)// to router
-		{
+		if (packet.getPacketType() == PacketType.subscribe) {
 			if (packet.getAction().equals(SUB_DO)) {
 				SubscribeEntity entity = JsonUtil.json2Bean(packet.getEntity(),
 						SubscribeEntity.class);
