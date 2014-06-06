@@ -25,7 +25,7 @@ public abstract class KeepAliveFilter extends BaseFilter implements Runnable {
 	}
 
 	protected ConnectionManager connMan;
-	protected long idleTimeMillis = 60 * 1000;// 默认是1分钟
+	public static long idleTimeMillis = 10 * 1000;// 默认是1分钟
 	protected boolean isTracking;
 	protected IdleWorkerFactory idleFactory;
 	public final Attribute<Long> attrLastActive = Grizzly.DEFAULT_ATTRIBUTE_BUILDER

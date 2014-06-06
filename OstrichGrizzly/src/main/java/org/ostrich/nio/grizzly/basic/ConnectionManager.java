@@ -34,11 +34,9 @@ public class ConnectionManager implements IPool {
 		this.maxActive = maxActive;
 		this.maxWaitTimeOut = maxWaitTimeOut;
 		connPool = new ConnectionPool(from, true);
-
-		for (int i = 0; i < maxActive; i++) {
+//		for (int i = 0; i < maxActive; i++) {
 			createConnection(1);
-		}
-
+//		}
 	}
 
 	public void putReadyConnection(NIOConnection conn) {

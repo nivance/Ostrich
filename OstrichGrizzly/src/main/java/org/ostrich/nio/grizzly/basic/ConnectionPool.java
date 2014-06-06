@@ -31,7 +31,6 @@ public class ConnectionPool implements IPool {
 		} else {
 			tracker = new NILTracker<NIOConnection>();
 		}
-
 	}
 
 	public void releaseConnection(NIOConnection conn) {
@@ -39,8 +38,7 @@ public class ConnectionPool implements IPool {
 			return;
 		}
 		if (conn.isOpen()) {
-			if (!idleConns.contains(conn))// 加上去重判断 !!
-			{
+			if (!idleConns.contains(conn)) {
 				idleConns.offer(conn);
 			}
 		}
@@ -87,9 +85,8 @@ public class ConnectionPool implements IPool {
 		try {
 			conn = idleConns.poll(timeMillis, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
 			throw new TimeoutException(
-					"GetConnection Time Out and no more connections@" + jid);
+					"GetConnection Time Out and no more connections@" + jid, e);
 		}
 		if (conn == null || !conn.isOpen()) {
 			throw new TimeoutException(

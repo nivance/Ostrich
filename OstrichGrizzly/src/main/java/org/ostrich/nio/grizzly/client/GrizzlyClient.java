@@ -15,6 +15,7 @@ import org.glassfish.grizzly.impl.SafeFutureImpl;
 import org.glassfish.grizzly.nio.NIOConnection;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
+import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.ostrich.nio.api.framework.basic.JsonPacketResponse;
 import org.ostrich.nio.api.framework.client.MsgHandler;
 import org.ostrich.nio.api.framework.exception.InsufficientConnectoinException;
@@ -26,8 +27,8 @@ import org.ostrich.nio.api.framework.protocol.JID;
 import org.ostrich.nio.api.framework.protocol.JsonPacket;
 import org.ostrich.nio.grizzly.basic.ConnectionManager;
 import org.ostrich.nio.grizzly.filterchain.BlockingConnectionFilter;
-import org.ostrich.nio.grizzly.filterchain.EntityHeartBeatFilter;
-import org.ostrich.nio.grizzly.filterchain.EntityHeartBeaterFactory;
+import org.ostrich.nio.grizzly.filterchain.HeartBeatFilter;
+import org.ostrich.nio.grizzly.filterchain.HeartBeaterFactory;
 import org.ostrich.nio.grizzly.filterchain.JSONTransferFilter;
 import org.ostrich.nio.grizzly.filterchain.client.ClientFilter;
 import org.ostrich.nio.grizzly.filterchain.client.EntityLoginFilter;
@@ -68,8 +69,8 @@ public class GrizzlyClient {
 		fcBuilder.add(new EntityLoginFilter(connMan,
 						LoginFilter.ClosedAction.RECONNECT, jid, serverJID,
 						loginToken));
-		EntityHeartBeatFilter entityHeartBeatFilter = EntityHeartBeatFilter
-				.getClientFilter(connMan, new EntityHeartBeaterFactory());
+		HeartBeatFilter entityHeartBeatFilter = HeartBeatFilter
+				.getClientFilter(connMan, new HeartBeaterFactory());
 		fcBuilder.add(entityHeartBeatFilter);
 		bcf = new BlockingConnectionFilter(maxDealTime);
 		fcBuilder.add(bcf);
@@ -78,6 +79,11 @@ public class GrizzlyClient {
 		fcBuilder.add(clientRouterFilter);
 		final TCPNIOTransportBuilder builder = TCPNIOTransportBuilder
 				.newInstance();
+		ThreadPoolConfig config = ThreadPoolConfig.defaultConfig().copy();
+        config.setCorePoolSize(maxActiveConnection * 2);
+        config.setMaxPoolSize(maxActiveConnection * 2);
+        config.setQueueLimit(-1);
+        builder.setWorkerThreadPoolConfig(config);
 		transport = builder.build();
 		transport.setProcessor(fcBuilder.build());
 		transport.start();

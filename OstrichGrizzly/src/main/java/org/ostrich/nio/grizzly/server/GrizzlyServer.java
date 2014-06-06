@@ -2,12 +2,9 @@ package org.ostrich.nio.grizzly.server;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.ConcurrentModificationException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,15 +19,17 @@ import org.glassfish.grizzly.nio.NIOConnection;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransport;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
 import org.glassfish.grizzly.threadpool.GrizzlyExecutorService;
+import org.glassfish.grizzly.utils.DelayedExecutor;
+import org.glassfish.grizzly.utils.IdleTimeoutFilter;
 import org.ostrich.nio.api.framework.exception.RouterException;
 import org.ostrich.nio.api.framework.protocol.AuthEntity;
 import org.ostrich.nio.api.framework.protocol.JID;
 import org.ostrich.nio.grizzly.filterchain.BlockingConnectionFilter;
-import org.ostrich.nio.grizzly.filterchain.CMKeepAliveFilter;
-import org.ostrich.nio.grizzly.filterchain.EntityHeartBeatFilter;
+import org.ostrich.nio.grizzly.filterchain.HeartBeatFilter;
 import org.ostrich.nio.grizzly.filterchain.JSONTransferFilter;
-import org.ostrich.nio.grizzly.filterchain.server.ServerAuthCheckFilter;
-import org.ostrich.nio.grizzly.filterchain.server.ServerRouterFilter;
+import org.ostrich.nio.grizzly.filterchain.KeepAliveFilter;
+import org.ostrich.nio.grizzly.filterchain.server.ServerAuthFilter;
+import org.ostrich.nio.grizzly.filterchain.server.ServerFilter;
 import org.ostrich.nio.grizzly.filterchain.server.SnifferFilter;
 
 @Slf4j
@@ -43,9 +42,9 @@ public class GrizzlyServer {
 	private Map<JID, GrizzlyClientSession> sessions = new HashMap<JID, GrizzlyClientSession>();
 	private @Getter @Setter AuthEntity loginToken;
 	private BlockingConnectionFilter bcf;
-	private CMKeepAliveFilter keepAliveFilter;
 	private int interval = 3 * 60 * 1000;
 	private boolean isMonitoring = true;
+	private DelayedExecutor de;
 
 	protected final Attribute<GrizzlyClientSession> SESSION_ATTR = Grizzly.DEFAULT_ATTRIBUTE_BUILDER
 			.createAttribute(GrizzlyServer.class.getName() + '-'
@@ -66,23 +65,26 @@ public class GrizzlyServer {
 		FilterChainBuilder fcBuilder = FilterChainBuilder.stateless();
 		fcBuilder.add(new TransportFilter());
 		fcBuilder.add(new JSONTransferFilter());
-		fcBuilder.add(new ServerAuthCheckFilter(this));
-		keepAliveFilter = EntityHeartBeatFilter.getServerFilter();
-		fcBuilder.add(keepAliveFilter);
+		fcBuilder.add(new ServerAuthFilter(this));
+		long idleTimeMillis = KeepAliveFilter.idleTimeMillis;
+		de = new DelayedExecutor(GrizzlyExecutorService.createInstance(), idleTimeMillis ,
+				TimeUnit.MILLISECONDS);
+		fcBuilder.add(new IdleTimeoutFilter(de, idleTimeMillis, TimeUnit.MILLISECONDS));
+		fcBuilder.add(HeartBeatFilter.getServerFilter());
 		bcf = new BlockingConnectionFilter(
 				BlockingConnectionFilter.MAX_DEAL_TIME_DEFAULT);
 		fcBuilder.add(bcf);
 		fcBuilder.add(new SnifferFilter(this));
-		fcBuilder.add(new ServerRouterFilter(this));
+		fcBuilder.add(new ServerFilter(this));
 
 		transport = TCPNIOTransportBuilder.newInstance().build();
 		transport.setProcessor(fcBuilder.build());
 		transport.bind(address, port);
+		de.start();
 		transport.start();
 		log.info("Server started:address=" + address + ",port=" + port);
 		// 启动监控
 		this.startMonitorConn();
-		this.startMonitorHeartBeat();
 	}
 
 	/**
@@ -118,53 +120,6 @@ public class GrizzlyServer {
 		}.start();
 	}
 	
-	ExecutorService executor = GrizzlyExecutorService.createInstance();
-	/**
-	 * 监控所有连接到路由的客户端连接池情况
-	 */
-	private void startMonitorHeartBeat() {
-		executor.execute(new HeartBeatMonitor());
-	}
-	
-	
-	class HeartBeatMonitor implements Runnable{
-		long heartbeattime = EntityHeartBeatFilter.idleTimeMillis;
-
-		@Override
-		public void run() {
-			Thread.currentThread().setName("MoniterHeartBeat");
-			while (isMonitoring) {
-				try {
-					Thread.sleep(heartbeattime);
-					if (sessions != null) {
-						for (GrizzlyClientSession cs : sessions.values()) {
-							LinkedBlockingDeque<NIOConnection> idleConnns = cs.getConnPool().getIdleConns();
-							Iterator<NIOConnection> idleIter = idleConnns.iterator();
-							while (idleIter.hasNext()) {
-								NIOConnection conn = idleIter.next();
-								Attribute<Long> activeAttr = keepAliveFilter.attrLastActive;
-								if (activeAttr.isSet(conn)) {// 该链接是被管理器管理的
-									long timeMillis = System.currentTimeMillis() - activeAttr.get(conn);
-									if (timeMillis > heartbeattime) {
-										log.debug("close connection.jid[" + jid.toString() + "] hasn't heartbeat for "
-												+ timeMillis + "ms, the default heartbeattime is " + heartbeattime + "ms,");
-										deleteConnection(conn);
-										conn.close();
-									}
-								}
-							}
-						}
-					}
-				} catch (ConcurrentModificationException e) {
-					log.debug("心跳检查检查出错", e);
-				} catch (Exception e) {
-					log.debug("心跳检查检查出错", e);
-				}
-			}
-		}
-		
-	}
-
 	public synchronized GrizzlyClientSession registerSession(Connection<?> conn,
 			JID from, AuthEntity auth) {
 		GrizzlyClientSession client = sessions.get(from);
@@ -234,6 +189,7 @@ public class GrizzlyServer {
 
 	public void shutdown() throws IOException {
 		isMonitoring = false;
+		de.stop();
 		transport.shutdown();
 	}
 

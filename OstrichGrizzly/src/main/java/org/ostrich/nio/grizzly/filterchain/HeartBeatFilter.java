@@ -7,22 +7,19 @@ import org.ostrich.nio.grizzly.basic.ConnectionManager;
 import org.ostrich.nio.grizzly.basic.IdleWorkerFactory;
 
 public class HeartBeatFilter extends KeepAliveFilter {
-	
+
 	public HeartBeatFilter(ConnectionManager connMan,
 			IdleWorkerFactory hbWorkerFactory, boolean trackAlive) {
 		super(connMan, hbWorkerFactory, trackAlive);
 	}
 
 	public static HeartBeatFilter getServerFilter() {
-		HeartBeatFilter ret = new HeartBeatFilter(null, null, true);
-		return ret;
+		return new HeartBeatFilter(null, null, false);
 	}
 
-	public static HeartBeatFilter getClientFilter(
-			ConnectionManager connMan, IdleWorkerFactory hbWorkerFactory) {
-		HeartBeatFilter ret = new HeartBeatFilter(connMan,
-				hbWorkerFactory, true);
-		return ret;
+	public static HeartBeatFilter getClientFilter(ConnectionManager connMan,
+			IdleWorkerFactory hbWorkerFactory) {
+		return new HeartBeatFilter(connMan, hbWorkerFactory, true);
 	}
 
 	@Override
