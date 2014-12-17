@@ -53,7 +53,7 @@ public class ClientFilter extends BaseFilter {
 			response.prepare();
 			if (packet.getPacketType() == PacketType.publish
 					|| packet.getPacketType() == PacketType.post) {
-				//response.setPacketSetted(true);
+				response.setPacketSetted(true);
 				response.setPacketWrited(true);
 			} else if (packet.getPacketType() == PacketType.post_response) {
 				response.setPacketSetted(true);
@@ -63,8 +63,7 @@ public class ClientFilter extends BaseFilter {
 				if (futureImpl != null) {
 					futureImpl.result(packet);
 				} else {
-					log.error("asynsend write error:request[" + packet
-							+ "], response[" + response.getPacket() + "]");
+					log.error("asynsend write error:request[" + packet + "]");
 					return ctx.getStopAction();
 				}
 				return ctx.getInvokeAction();
@@ -99,7 +98,7 @@ public class ClientFilter extends BaseFilter {
 		this.futureMap.put(key, futureImpl);
 	}
 
-	public void remoreFuture(String key) {
+	public void removeFuture(String key) {
 		if (futureMap.containsKey(key)) {
 			futureMap.remove(key);
 		}
