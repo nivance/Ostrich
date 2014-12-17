@@ -182,7 +182,7 @@ public class GrizzlyClient {
 			if (connection != null) {
 				connMan.releaseConnection(connection);
 			}
-			clientRouterFilter.remoreFuture(packet.getId());
+			clientRouterFilter.removeFuture(packet.getId());
 			long endTime = System.currentTimeMillis();
 			log.trace("::asynSend [" + jid.toString() + ",to" + packet.getTo()
 					+ "]cost:" + (endTime - startTime));
