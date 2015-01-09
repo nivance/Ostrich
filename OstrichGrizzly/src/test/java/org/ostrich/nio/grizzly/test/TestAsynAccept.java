@@ -2,6 +2,8 @@ package org.ostrich.nio.grizzly.test;
 
 import java.io.IOException;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.ostrich.nio.api.framework.basic.JsonPacketResponse;
 import org.ostrich.nio.api.framework.client.MsgHandler;
 import org.ostrich.nio.api.framework.constants.OstrichConstants;
@@ -11,11 +13,12 @@ import org.ostrich.nio.api.framework.protocol.JID;
 import org.ostrich.nio.api.framework.protocol.JsonPacket;
 import org.ostrich.nio.grizzly.client.GrizzlyClient;
 
+@Slf4j
 public class TestAsynAccept implements MsgHandler {
 
 	GrizzlyClient rc;
 
-	public static JID myJid = new JID("test1.joyveb/local");
+	public static JID myJid = new JID("test1.ostrich/local");
 
 	public TestAsynAccept() {
 	}
@@ -23,7 +26,7 @@ public class TestAsynAccept implements MsgHandler {
 	public void startup() {
 		try {
 			rc = new GrizzlyClient(myJid, TestServer.SID, this);
-			rc.init("127.0.0.1", 10080, 1, OstrichConstants.loginToken, 60000);
+			rc.init("127.0.0.1", 10080, 3, OstrichConstants.loginToken, 60000);
 		} catch (RouterException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -34,12 +37,9 @@ public class TestAsynAccept implements MsgHandler {
 	public static void main(String[] args) {
 		TestAsynAccept accept = new TestAsynAccept();
 		accept.startup();
-		
 		while (true){
 			try {
 				Thread.sleep(5000);
-				
-				
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -53,7 +53,7 @@ public class TestAsynAccept implements MsgHandler {
 		try {
 			if(TestAsynSend.asynaction.equals(request.getAction())){
 				JsonPacket resp = request.asPostResult(request.getId() + " OK");
-				System.out.println("response:" + resp.getId() + ", data:" + resp);
+				log.debug("response:" + resp.getId() + ", data:" + resp);
 				response.writePacket(resp);
 			}else if(TestAsynSend.syncaction.equals(request.getAction())){
 				JsonPacket resp = request.asResult(request.getId() + " OK");

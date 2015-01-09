@@ -14,12 +14,12 @@ import org.ostrich.nio.grizzly.client.GrizzlyClient;
 public class TestHeartBeat1 implements MsgHandler {
 
 	GrizzlyClient rc;
-	public static JID myJid = new JID("test1@joyveb.com");
+	public static JID myJid = new JID("test1@ostrich.com");
 
 	public TestHeartBeat1() {
 		rc = new GrizzlyClient(myJid, TestServer.SID, this);
 		try {
-			this.rc.init("127.0.0.1", 10080, 5, new AuthEntity("joyveb"), 60000);
+			this.rc.init("127.0.0.1", 10080, 5, new AuthEntity("ostrich"), 60000);
 		} catch (RouterException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

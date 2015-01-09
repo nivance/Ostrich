@@ -7,10 +7,10 @@ import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.impl.SafeFutureImpl;
 import org.ostrich.nio.api.framework.basic.JsonPacketResponse;
 import org.ostrich.nio.api.framework.client.MsgHandler;
+import org.ostrich.nio.api.framework.constants.OstrichConstants;
 import org.ostrich.nio.api.framework.exception.ComponentException;
 import org.ostrich.nio.api.framework.exception.RemoteCallException;
 import org.ostrich.nio.api.framework.exception.RouterException;
-import org.ostrich.nio.api.framework.protocol.AuthEntity;
 import org.ostrich.nio.api.framework.protocol.JID;
 import org.ostrich.nio.api.framework.protocol.JsonPacket;
 import org.ostrich.nio.grizzly.client.GrizzlyClient;
@@ -19,7 +19,7 @@ public class TestAsynSend implements MsgHandler {
 
 	GrizzlyClient rc;
 
-	public static JID myJid = new JID("TestAsynSend@joyveb.com");
+	public static JID myJid = new JID("TestAsynSend@ostrich.com");
 	public static String asynaction = "asynAction";
 	public static String syncaction = "syncAction";
 
@@ -28,7 +28,7 @@ public class TestAsynSend implements MsgHandler {
 
 	public void startup() throws RouterException, IOException {
 		rc = new GrizzlyClient(myJid, TestServer.SID, this);
-		rc.init("127.0.0.1", 10080, 20, new AuthEntity("joyveb"), 20000);
+		rc.init("127.0.0.1", 10080, 2, OstrichConstants.loginToken, 20000);
 	}
 
 	public static void main(String[] args) {

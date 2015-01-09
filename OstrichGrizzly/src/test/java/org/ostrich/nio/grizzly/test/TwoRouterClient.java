@@ -16,8 +16,8 @@ public class TwoRouterClient implements MsgHandler {
 	GrizzlyClient rc1;
 	GrizzlyClient rc2;
 
-	static JID myJid1 = new JID("test1@joyveb.com");
-	static JID myJid2 = new JID("test2@joyveb.com");
+	static JID myJid1 = new JID("test1@ostrich.com");
+	static JID myJid2 = new JID("test2@ostrich.com");
 
 	public TwoRouterClient() {
 		rc1 = new GrizzlyClient(myJid1, TestServer1.SID, this);
@@ -26,8 +26,8 @@ public class TwoRouterClient implements MsgHandler {
 
 	public void startup() {
 		try {
-			rc1.init("127.0.0.1", 10080, 2, new AuthEntity("joyveb"), 1000);
-			rc2.init("127.0.0.1", 10081, 2, new AuthEntity("joyveb"), 1000);
+			rc1.init("127.0.0.1", 10080, 2, new AuthEntity("ostrich"), 1000);
+			rc2.init("127.0.0.1", 10081, 2, new AuthEntity("ostrich"), 1000);
 		} catch (RouterException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

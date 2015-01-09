@@ -16,7 +16,7 @@ public class TestServer {
 	public static void main(String[] args) {
 		try {
 			GrizzlyServer rs = new GrizzlyServer(SID);
-			rs.startup("127.0.0.1", 10080, new AuthEntity("joyveb"));
+			rs.startup("127.0.0.1", 10080, new AuthEntity("ostrich"));
 			Thread.sleep(100000000);
 		} catch (RouterException e) {
 			e.printStackTrace();

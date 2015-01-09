@@ -26,13 +26,13 @@ public class TestClient implements MsgHandler {
 	public TestClient(int myid) {
 		this.myid = myid;
 		System.out.println("TestClient:"+this.myid);
-		this.myJid = new JID("test" + myid + "@joyveb.com");
+		this.myJid = new JID("test" + myid + "@ostrich.com");
 		rc = new GrizzlyClient(myJid, TestServer.SID, this);
 	}
 
 	public void startup() {
 		try {
-			rc.init("127.0.0.1", 10080, 2, new AuthEntity("joyveb"), 1000);
+			rc.init("127.0.0.1", 10080, 2, new AuthEntity("ostrich"), 1000);
 		} catch (RouterException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -71,7 +71,7 @@ public class TestClient implements MsgHandler {
 								// randint++;
 								JsonPacket req = JsonPacket
 										.newRequest(new JID("test" + di
-												+ "@joyveb.com"), "action", new StringEntity(""+randint));
+												+ "@ostrich.com"), "action", new StringEntity(""+randint));
 
 //								System.out.println("req=" + req);
 								JsonPacket ret = clients.get(si).rc

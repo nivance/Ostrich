@@ -26,16 +26,16 @@ public class TestSubscribe implements MsgHandler,SubscriptionHandler{
 	public TestSubscribe(int myid) {
 		this.myid = myid;
 		System.out.println("TestClient:"+this.myid);
-		this.myJid = new JID("testsubscribe" + myid + "@joyveb.com");
+		this.myJid = new JID("testsubscribe" + myid + "@ostrich.com");
 		rs = new GrizzlySubscriber(myJid, TestServer.SID, this);
 	}
 
 	public void startup() {
 		try {
-			SubscribeEntity subentity=new SubscribeEntity("test1@joyveb.com", null, null, null);
+			SubscribeEntity subentity=new SubscribeEntity("test1@ostrich.com", null, null, null);
 			subentity.setSubkey("sub1");
 			rs.addSubscribe(subentity,this);
-			rs.init("192.168.0.121", 10080, 2, new AuthEntity("joyveb",3), 60*1000);
+			rs.init("192.168.0.121", 10080, 2, new AuthEntity("ostrich",3), 60*1000);
 		} catch (RouterException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
