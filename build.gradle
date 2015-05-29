@@ -7,7 +7,6 @@ buildscript {
 subprojects {
 	apply plugin: 'java'
 	apply plugin: 'eclipse'
-	apply plugin: 'ipojo'
 
 	project.group='org.ostrich'
 
